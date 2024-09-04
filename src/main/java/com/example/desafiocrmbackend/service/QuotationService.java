@@ -96,7 +96,7 @@ public class QuotationService {
         for(ProductDTO product : products){
             Long id = product.getId();
             if(!productRepository.existsById(id)){
-                throw new RuntimeException("Quotation not found");
+                throw new RuntimeException("Product not found");
             }
         }
     }

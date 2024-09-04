@@ -1,5 +1,6 @@
 package com.example.desafiocrmbackend.controller;
 
+import com.example.desafiocrmbackend.entity.dto.ProductDTO;
 import com.example.desafiocrmbackend.entity.dto.QuotationDTO;
 import com.example.desafiocrmbackend.service.QuotationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,16 @@ public class QuotationController {
     @PostMapping
     public ResponseEntity<QuotationDTO> save(@RequestBody QuotationDTO quotationDTO){
         return ResponseEntity.ok(quotationService.save(quotationDTO));
+    }
+
+    @PostMapping("/{id}/add-product")
+    public ResponseEntity<QuotationDTO> addProductToQuotation(@PathVariable Long id, @RequestBody ProductDTO productToAdd){
+        return ResponseEntity.ok(quotationService.addProductToQuotation(id, productToAdd));
+    }
+
+    @PostMapping("/{id}/remove-product")
+    public ResponseEntity<QuotationDTO> removeProductFromQuotation(@PathVariable Long id, @RequestBody ProductDTO productToRemove){
+        return ResponseEntity.ok(quotationService.removeProductFromQuotation(id, productToRemove));
     }
 
     @PutMapping("/{id}")

@@ -1,6 +1,5 @@
 package com.example.desafiocrmbackend.service;
 
-import com.example.desafiocrmbackend.entity.Client;
 import com.example.desafiocrmbackend.entity.Product;
 import com.example.desafiocrmbackend.entity.Quotation;
 import com.example.desafiocrmbackend.entity.dto.ClientDTO;
@@ -48,7 +47,7 @@ public class QuotationService {
         List<Quotation> quotations = quotationRepository.findAll();
         List<QuotationDTO> quotationDTOs = new ArrayList<>();
         for (Quotation quotation : quotations) {
-            QuotationDTO quotationDTO = getQuotationDTO(quotation);
+            QuotationDTO quotationDTO = mapToQuotationDTO(quotation);
             quotationDTOs.add(quotationDTO);
         }
         return quotationDTOs;
@@ -56,13 +55,36 @@ public class QuotationService {
 
     public QuotationDTO findById(Long id) {
         Quotation quotation = quotationRepository.findById(id).orElseThrow(() -> new RuntimeException("Quotation not found"));
-        return getQuotationDTO(quotation);
+        return mapToQuotationDTO(quotation);
+    }
+
+    @Transactional
+    public QuotationDTO addProductToQuotation(Long id, ProductDTO productToAdd) {
+        Quotation quotation = mapToQuotationEntity(findById(id));
+        quotation.getProducts().add(productService.mapToProductEntity(productToAdd));
+        return mapToQuotationDTO(quotationRepository.save(quotation));
+    }
+
+    @Transactional
+    public QuotationDTO removeProductFromQuotation(Long id, ProductDTO productToRemove) {
+        Quotation quotation = mapToQuotationEntity(findById(id));
+        Product productEntityToRemove = productService.mapToProductEntity(productToRemove);
+        List<Product> products = quotation.getProducts();
+
+        for (Product product : products) {
+            if (product.getId().equals(productEntityToRemove.getId())) {
+                products.remove(product);
+                break;
+            }
+        }
+
+        return mapToQuotationDTO(quotationRepository.save(quotation));
     }
 
     @Transactional
     public QuotationDTO save(QuotationDTO quotationDTO) {
         validateQuotationDTO(quotationDTO);
-        return getQuotationDTO(quotationRepository.save(getQuotation(quotationDTO)));
+        return mapToQuotationDTO(quotationRepository.save(mapToQuotationEntity(quotationDTO)));
     }
 
     private void validateQuotationDTO(QuotationDTO quotationDTO) {
@@ -108,23 +130,23 @@ public class QuotationService {
         quotationRepository.deleteById(id);
     }
 
-    private QuotationDTO getQuotationDTO(Quotation quotation){
+    private QuotationDTO mapToQuotationDTO(Quotation quotation){
         QuotationDTO quotationDTO = new QuotationDTO();
         quotationDTO.setId(quotation.getId());
-        quotationDTO.setClient(clientService.getClientDTO(quotation.getClient()));
+        quotationDTO.setClient(clientService.mapToClientDTO(quotation.getClient()));
         quotationDTO.setStatus(quotation.getStatus());
-        quotationDTO.setProducts(productService.getProductsDTOFromProduct(quotation.getProducts()));
+        quotationDTO.setProducts(productService.mapToProductsDTOs(quotation.getProducts()));
         quotationDTO.setCreatedAt(quotation.getCreatedAt());
         quotationDTO.setFinishedOn(quotation.getFinishedOn());
         return quotationDTO;
     }
 
-    private Quotation getQuotation(QuotationDTO quotationDTO){
+    private Quotation mapToQuotationEntity(QuotationDTO quotationDTO){
         Quotation quotation = new Quotation();
         quotation.setId(quotationDTO.getId());
-        quotation.setClient(clientService.getClient(quotationDTO.getClient()));
+        quotation.setClient(clientService.mapToClientEntity(quotationDTO.getClient()));
         quotation.setStatus(quotationDTO.getStatus());
-        quotation.setProducts(productService.getProductsFromDTOs(quotationDTO.getProducts()));
+        quotation.setProducts(productService.mapToProductsEntities(quotationDTO.getProducts()));
         quotation.setCreatedAt(quotationDTO.getCreatedAt());
         quotation.setFinishedOn(quotationDTO.getFinishedOn());
         return quotation;

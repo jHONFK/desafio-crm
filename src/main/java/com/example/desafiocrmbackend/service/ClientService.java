@@ -23,7 +23,7 @@ public class ClientService {
         List<Client> clients = clientRepository.findAll();
         List<ClientDTO> clientDTOs = new ArrayList<>();
         for (Client client : clients) {
-            ClientDTO clientDTO = getClientDTO(client);
+            ClientDTO clientDTO = mapToClientDTO(client);
             clientDTOs.add(clientDTO);
         }
         return clientDTOs;
@@ -31,11 +31,11 @@ public class ClientService {
 
     public ClientDTO findById(Long id){
         Client client = clientRepository.findById(id).orElseThrow(() -> new RuntimeException("Client not found"));
-        return getClientDTO(client);
+        return mapToClientDTO(client);
     }
 
     public ClientDTO save(ClientDTO clientDTO){
-        return getClientDTO(clientRepository.save(getClient(clientDTO)));
+        return mapToClientDTO(clientRepository.save(mapToClientEntity(clientDTO)));
     }
 
     public ClientDTO update(Long id, ClientDTO clientDTO){
@@ -53,7 +53,7 @@ public class ClientService {
         clientRepository.deleteById(id);
     }
 
-    public ClientDTO getClientDTO(Client client) {
+    public ClientDTO mapToClientDTO(Client client) {
         ClientDTO clientDTO = new ClientDTO();
         clientDTO.setId(client.getId());
         clientDTO.setName(client.getName());
@@ -63,7 +63,7 @@ public class ClientService {
         return clientDTO;
     }
 
-    public Client getClient(ClientDTO clientDTO) {
+    public Client mapToClientEntity(ClientDTO clientDTO) {
         Client client = new Client();
         client.setId(clientDTO.getId());
         client.setName(clientDTO.getName());

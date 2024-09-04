@@ -3,6 +3,7 @@ package com.example.desafiocrmbackend.service;
 import com.example.desafiocrmbackend.entity.Product;
 import com.example.desafiocrmbackend.entity.dto.ProductDTO;
 import com.example.desafiocrmbackend.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,22 +25,23 @@ public class ProductService {
         List<Product> products = productRepository.findAll();
         List<ProductDTO> productDTOs = new ArrayList<>();
         for (Product product : products) {
-            ProductDTO productDTO = getProductDTO(product);
+            ProductDTO productDTO = mapToProductDTO(product);
             productDTOs.add(productDTO);
         }
         return productDTOs;
     }
 
     public ProductDTO findById(Long id){
-        return getProductDTO(productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found")));
+        return mapToProductDTO(productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found")));
     }
 
-
+    @Transactional
     public ProductDTO save(ProductDTO productDTO){
         validateProductDTO(productDTO);
-        return getProductDTO(productRepository.save(getProduct(productDTO)));
+        return mapToProductDTO(productRepository.save(mapToProductEntity(productDTO)));
     }
 
+    @Transactional
     public ProductDTO update(Long id, ProductDTO productDTO){
         ProductDTO productToUpdate = findById(id);
         productToUpdate.setName(productDTO.getName());
@@ -77,7 +79,7 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    public ProductDTO getProductDTO(Product product){
+    public ProductDTO mapToProductDTO(Product product){
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(product.getId());
         productDTO.setName(product.getName());
@@ -87,7 +89,7 @@ public class ProductService {
         return productDTO;
     }
 
-    private Product getProduct(ProductDTO productDTO){
+    public Product mapToProductEntity(ProductDTO productDTO){
         Product product = new Product();
         product.setId(productDTO.getId());
         product.setName(productDTO.getName());
@@ -97,7 +99,7 @@ public class ProductService {
         return product;
     }
 
-    public List<Product> getProductsFromDTOs(List<ProductDTO> productDTOs) {
+    public List<Product> mapToProductsEntities(List<ProductDTO> productDTOs) {
         List<Product> products = new ArrayList<>();
         for (ProductDTO productDTO : productDTOs) {
             Product product = new Product();
@@ -111,7 +113,7 @@ public class ProductService {
         return products;
     }
 
-    public List<ProductDTO> getProductsDTOFromProduct(List<Product> products) {
+    public List<ProductDTO> mapToProductsDTOs(List<Product> products) {
         List<ProductDTO> productDTOs = new ArrayList<>();
         for (Product product : products) {
             ProductDTO productDTO = new ProductDTO();
